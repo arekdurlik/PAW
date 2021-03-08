@@ -50,7 +50,7 @@ function validate(&$x,&$y,&$operation,&$messages){
 	else return true;
 }
 
-function process(&$x,&$y,&$operation,&$messages,&$result){
+function process(&$x,&$y,&$operation,&$messages,&$result1){
 	global $role;
 	
 	//konwersja parametrów na int
@@ -61,23 +61,23 @@ function process(&$x,&$y,&$operation,&$messages,&$result){
 	switch ($operation) {
 		case 'minus' :
 			if ($role == 'admin'){
-				$result = $x - $y;
+				$result1 = $x - $y;
 			} else {
 				$messages [] = 'Tylko administrator może odejmować !';
 			}
 			break;
 		case 'times' :
-			$result = $x * $y;
+			$result1 = $x * $y;
 			break;
 		case 'div' :
 			if ($role == 'admin'){
-				$result = $x / $y;
+				$result1 = $x / $y;
 			} else {
 				$messages [] = 'Tylko administrator może dzielić !';
 			}
 			break;
 		default :
-			$result = $x + $y;
+			$result1 = $x + $y;
 			break;
 	}
 }
@@ -86,16 +86,16 @@ function process(&$x,&$y,&$operation,&$messages,&$result){
 $x = null;
 $y = null;
 $operation = null;
-$result = null;
+$result1 = null;
 $messages = array();
 
 //pobierz parametry i wykonaj zadanie jeśli wszystko w porządku
 getParams($x,$y,$operation);
 if ( validate($x,$y,$operation,$messages) ) { // gdy brak błędów
-	process($x,$y,$operation,$messages,$result);
+	process($x,$y,$operation,$messages,$result1);
 }
 
 // Wywołanie widoku z przekazaniem zmiennych
-// - zainicjowane zmienne ($messages,$x,$y,$operation,$result)
+// - zainicjowane zmienne ($messages,$x,$y,$operation,$result1)
 //   będą dostępne w dołączonym skrypcie
 include 'calc_view.php';
