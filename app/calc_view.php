@@ -13,12 +13,12 @@
 </head>
 <body>
 
-<div style="width:90%; margin: 2em auto;">
+<div style="width:90%; margin-top:6em; margin-left:16em">
 	<a href="<?php print(_APP_ROOT); ?>/app/inna_chroniona.php" class="pure-button">kolejna chroniona strona</a>
 	<a href="<?php print(_APP_ROOT); ?>/app/security/logout.php" class="pure-button pure-button-active">Wyloguj</a>
 </div>
 
-<div style="width:90%; margin: 2em auto;">
+<div style="width:90%; margin-left:16em">
     
 <form action="<?php print(_APP_ROOT); ?>/app/calc.php" method="post" class="pure-form pure-form-stacked">
 	<legend>Kalkulator</legend>
@@ -47,8 +47,10 @@
 	<label for="id_proc">Oprocentowanie: </label>
 	<input id="id_proc" type="text" name="oproc" value="<?php if (isset($oproc)) print($oproc); ?>" /><br />
 	<input type="submit" value="Oblicz" class="pure-button pure-button-primary" />
-</form>
-
+</form>       
+       
+</div>
+    
 <?php if (isset($result1)){ ?>
 <div style="margin: 0 auto; padding: 1em; border-radius: 0.5em; background-color: #ff0; width:25em; text-align: center; font-size: 25px;">
 <?php echo 'Wynik: '.$result1; ?>
@@ -65,16 +67,14 @@
 //wyświeltenie listy błędów, jeśli istnieją
 if (isset($messages)) {
 	if (count ( $messages ) > 0) {
-		echo '<ol style="margin-top: 1em; padding: 1em 1em 1em 2em; border-radius: 0.5em; background-color: #f88; width:25em;">';
+		echo '<ol style="margin: 0 auto; padding: 1em; padding-left:2em; border-radius: 0.5em; background-color: #f88; width:25em; font-size: 25px;">';
 		foreach ( $messages as $key => $msg ) {
 			echo '<li>'.$msg.'</li>';
 		}
 		echo '</ol>';
 	}
 }
-?>        
-        
-</div>
+?>     
 
 </body>
 </html>
