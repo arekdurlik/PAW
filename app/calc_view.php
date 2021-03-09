@@ -27,10 +27,10 @@
 		<input id="id_x" type="text" name="x" value="<?php out($x) ?>" />
 		<label for="id_op">Operacja: </label>
 		<select name="op">	
-			<option value="plus">+</option>
-			<option value="minus">-</option>
-			<option value="times">*</option>
-			<option value="div">/</option>
+			<option value="plus" <?php if (isset($operation)) if ($operation == 'plus') print('selected'); ?>>+</option>
+                    <option value="minus" <?php if (isset($operation)) if ($operation == 'minus') print('selected'); ?>>-</option>
+                    <option value="times" <?php if (isset($operation)) if ($operation == 'times') print('selected'); ?>>*</option>
+                    <option value="div" <?php if (isset($operation)) if($operation == 'div') print('selected'); ?>>/</option>
 		</select>
 		<label for="id_y">Liczba 2: </label>
 		<input id="id_y" type="text" name="y" value="<?php out($y) ?>" />
