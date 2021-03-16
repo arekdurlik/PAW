@@ -16,7 +16,7 @@
 		<!-- Header -->
 			<section id="header" class="dark">
 				<header>
-					<h1>Witajcie w kalkulatorze kredytu bankowego</h1>
+					<h1>Witaj w kalkulatorze kredytu bankowego</h1>
 					<p>Nie spodziewałem się, że to zadanie będzie aż takie trudne</p>
 				</header>
 				<footer>
@@ -35,7 +35,7 @@
 			<section id="footer">
 				<div class="copyright">
 					<ul class="menu">
-						<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+						<li>&copy; Arek Durlik. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
 					</ul>
 				</div>
 			</section>
