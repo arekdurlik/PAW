@@ -5,79 +5,78 @@ require_once dirname(__FILE__).'/../config.php';
 require_once _ROOT_PATH.'/lib/smarty/Smarty.class.php';
 
 //pobranie parametrów
-function getParams(&$form){
-	$form['x'] = isset($_REQUEST['x']) ? $_REQUEST['x'] : null;
-	$form['y'] = isset($_REQUEST['y']) ? $_REQUEST['y'] : null;
-	$form['op'] = isset($_REQUEST['op']) ? $_REQUEST['op'] : null;	
+function getParams(&$kwota,&$lata,&$oproc){
+	$kwota = isset($_REQUEST['kwota']) ? $_REQUEST['kwota'] : null;
+	$lata = isset($_REQUEST['lata']) ? $_REQUEST['lata'] : null;
+	$oproc = isset($_REQUEST['oproc']) ? $_REQUEST['oproc'] : null;
 }
 
 //walidacja parametrów z przygotowaniem zmiennych dla widoku
-function validate(&$form,&$infos,&$msgs,&$hide_intro){
-
-	//sprawdzenie, czy parametry zostały przekazane - jeśli nie to zakończ walidację
-	if ( ! (isset($form['x']) && isset($form['y']) && isset($form['op']) ))	return false;	
-	
-	//parametry przekazane zatem
-	//nie pokazuj wstępu strony gdy tryb obliczeń (aby nie trzeba było przesuwać)
-	// - ta zmienna zostanie użyta w widoku aby nie wyświetlać całego bloku itro z tłem 
-	$hide_intro = true;
-
-	$infos [] = 'Przekazano parametry.';
+function validate(&$kwota,&$lata,&$oproc,&$messages,$infos){
+	// sprawdzenie, czy parametry zostały przekazane
+	if ( ! (isset($kwota) && isset($lata) && isset($oproc))) {
+		// sytuacja wystąpi kiedy np. kontroler zostanie wywołany bezpośrednio - nie z formularza
+		// teraz zakładamy, ze nie jest to błąd. Po prostu nie wykonamy obliczeń
+		return false;
+	}
 
 	// sprawdzenie, czy potrzebne wartości zostały przekazane
-	if ( $form['x'] == "") $msgs [] = 'Nie podano liczby 1';
-	if ( $form['y'] == "") $msgs [] = 'Nie podano liczby 2';
-	
+	if ( $kwota == "") {
+		$messages [] = 'Nie podano kwoty';
+	}
+	if ( $lata == "") {
+		$messages [] = 'Nie podano lat';
+	}
+        if ( $oproc == "") {
+		$messages [] = 'Nie podano oprocentowania';
+	}
+
 	//nie ma sensu walidować dalej gdy brak parametrów
-	if ( count($msgs)==0 ) {
-		// sprawdzenie, czy $x i $y są liczbami całkowitymi
-		if (! is_numeric( $form['x'] )) $msgs [] = 'Pierwsza wartość nie jest liczbą';
-		if (! is_numeric( $form['y'] )) $msgs [] = 'Druga wartość nie jest liczbą';
+	if (count ( $messages ) != 0) return false;
+	
+	// sprawdzenie, czy $kwota i $lata są liczbami całkowitymi
+	if (! is_numeric( $kwota )) {
+		$messages [] = 'Kwota nie jest liczbą całkowitą';
 	}
 	
-	if (count($msgs)>0) return false;
+	if (! is_numeric( $lata )) {
+		$messages [] = 'Lata nie są liczbą całkowitą';
+	}
+        
+        if (! is_numeric( $oproc )) {
+		$messages [] = 'Oprocentowanie nie jest liczbą całkowitą';
+	}
+
+	if (count ( $messages ) != 0) return false;
 	else return true;
 }
-	
-// wykonaj obliczenia
-function process(&$form,&$infos,&$msgs,&$result){
-	$infos [] = 'Parametry poprawne. Wykonuję obliczenia.';
+
+function process(&$kwota,&$lata,&$oproc,&$messages,$infos,&$result){
+	global $role;
 	
 	//konwersja parametrów na int
-	$form['x'] = floatval($form['x']);
-	$form['y'] = floatval($form['y']);
+	$kwota = intval($kwota);
+	$lata = intval($lata);
+        $oproc = intval($oproc);
 	
-	//wykonanie operacji
-	switch ($form['op']) {
-	case 'minus' :
-		$result = $form['x'] - $form['y'];
-		$form['op_name'] = '-';
-		break;
-	case 'times' :
-		$result = $form['x'] * $form['y'];
-		$form['op_name'] = '*';
-		break;
-	case 'div' :
-		$result = $form['x'] / $form['y'];
-		$form['op_name'] = '/';
-		break;
-	default :
-		$result = $form['x'] + $form['y'];
-		$form['op_name'] = '+';
-		break;
-	}
+            $msc = $lata * 12;
+            $opr = $oproc * 0.01;
+	
+            $result = ($kwota/$msc + ($kwota/$msc)*$opr);
 }
 
-//inicjacja zmiennych
-$form = null;
-$infos = array();
-$messages = array();
+//definicja zmiennych kontrolera
+$kwota = null;
+$lata = null;
+$oproc = null;
 $result = null;
-$hide_intro = false;
-	
-getParams($form);
-if ( validate($form,$infos,$messages,$hide_intro) ){
-	process($form,$infos,$messages,$result);
+$messages = array();
+$infos = array();
+
+//pobierz parametry i wykonaj zadanie jeśli wszystko w porządku
+getParams($kwota,$lata,$oproc);
+if ( validate($kwota,$lata,$oproc,$messages,$infos) ) { // gdy brak błędów
+	process($kwota,$lata,$oproc,$messages,$infos,$result);
 }
 
 // 4. Przygotowanie danych dla szablonu
@@ -86,17 +85,16 @@ $smarty = new Smarty();
 
 $smarty->assign('app_url',_APP_URL);
 $smarty->assign('root_path',_ROOT_PATH);
-$smarty->assign('page_title','Przykład 04');
+$smarty->assign('app_root', _APP_ROOT);
+$smarty->assign('page_title','Kalkulator kredytowy');
 $smarty->assign('page_description','Profesjonalne szablonowanie oparte na bibliotece Smarty');
 $smarty->assign('page_header','Szablony Smarty');
 
-$smarty->assign('hide_intro',$hide_intro);
 
 //pozostałe zmienne niekoniecznie muszą istnieć, dlatego sprawdzamy aby nie otrzymać ostrzeżenia
-$smarty->assign('form',$form);
 $smarty->assign('result',$result);
 $smarty->assign('messages',$messages);
 $smarty->assign('infos',$infos);
 
 // 5. Wywołanie szablonu
-$smarty->display(_ROOT_PATH.'/app/calc.html');
+$smarty->display(_ROOT_PATH.'/app/calc.tpl');

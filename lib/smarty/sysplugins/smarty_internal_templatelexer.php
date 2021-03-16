@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ERROR);
 /**
 * Smarty Internal Plugin Templatelexer
 *
