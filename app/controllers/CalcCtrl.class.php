@@ -1,11 +1,10 @@
 <?php
-// W skrypcie definicji kontrolera nie trzeba dołączać problematycznego skryptu config.php,
-// ponieważ będzie on użyty w miejscach, gdzie config.php zostanie już wywołany.
 
-require_once $conf->root_path.'/lib/smarty/Smarty.class.php';
-require_once $conf->root_path.'/lib/Messages.class.php';
-require_once $conf->root_path.'/app/calc/CalcForm.class.php';
-require_once $conf->root_path.'/app/calc/CalcResult.class.php';
+namespace app\controllers;
+
+use core\Messages;
+use app\forms\CalcForm;
+use app\transfer\CalcResult;
 
 /** Kontroler kalkulatora
  * @author Przemysław Kudłacik
@@ -31,9 +30,9 @@ class CalcCtrl {
 	 * Pobranie parametrów
 	 */
 	public function getParams(){
-		$this->form->kwota = isset($_REQUEST ['kwota']) ? $_REQUEST ['kwota'] : null;
-		$this->form->lata = isset($_REQUEST ['lata']) ? $_REQUEST ['lata'] : null;
-		$this->form->oproc = isset($_REQUEST ['oproc']) ? $_REQUEST ['oproc'] : null;
+		$this->form->kwota = getFromRequest('kwota');
+		$this->form->lata = getFromRequest('lata');
+		$this->form->oproc = getFromRequest('oproc');
 	}
 	
 	/** 
@@ -49,13 +48,13 @@ class CalcCtrl {
 		
 		// sprawdzenie, czy potrzebne wartości zostały przekazane
 		if ($this->form->kwota == "") {
-			$this->msgs->addError('Nie podano kwoty');
+			getMessages()->addError('Nie podano kwoty');
 		}
 		if ($this->form->lata == "") {
-			$this->msgs->addError('Nie podano lat');
+			getMessages()->addError('Nie podano lat');
 		}
                 if ($this->form->oproc == "") {
-			$this->msgs->addError('Nie podano oprocentowania');
+			getMessages()->addError('Nie podano oprocentowania');
 		}
 		
 		// nie ma sensu walidować dalej gdy brak parametrów
@@ -63,17 +62,17 @@ class CalcCtrl {
 			
 			// sprawdzenie, czy $x i $y są liczbami całkowitymi
 			if (! is_numeric ( $this->form->kwota )) {
-				$this->msgs->addError('Kwota nie jest liczbą całkowitą');
+                            getMessages()->addError('Kwota nie jest liczbą całkowitą');
 			}
 			
 			if (! is_numeric ( $this->form->lata )) {
-				$this->msgs->addError('Lata nie są liczbą całkowitą');
+				getMessages()->addError('Lata nie są liczbą całkowitą');
 			}
 		}       if (! is_numeric ( $this->form->oproc )) {
-				$this->msgs->addError('Oprocentowanie nie jest liczbą całkowitą');
+				getMessages()->addError('Oprocentowanie nie jest liczbą całkowitą');
 			}
 		
-		return ! $this->msgs->isError();
+		return ! getMessages()->isError();
 	}
 	
 	/** 
@@ -108,20 +107,16 @@ class CalcCtrl {
 	/**
 	 * Wygenerowanie widoku
 	 */
-	public function generateView(){
-		global $conf;
+	public function generateView(){;
 		
-		$smarty = new Smarty();
-		$smarty->assign('conf',$conf);
-		
-		$smarty->assign('page_title','Kalkulator kredytowy');
-		$smarty->assign('page_description','Liczymy sobie');
-		$smarty->assign('page_header','Jest dobrze');
+		getSmarty()->assign('page_title','Kalkulator kredytowy');
+		getSmarty()->assign('page_description','Liczymy sobie');
+		getSmarty()->assign('page_header','Jest dobrze');
 					
-		$smarty->assign('msgs',$this->msgs);
-		$smarty->assign('form',$this->form);
-		$smarty->assign('res',$this->result);
+		getSmarty()->assign('msgs',$this->msgs);
+		getSmarty()->assign('form',$this->form);
+		getSmarty()->assign('res',$this->result);
 		
-		$smarty->display($conf->root_path.'/app/calc/calc.tpl');
+		getSmarty()->display('calc.tpl');
 	}
 }
