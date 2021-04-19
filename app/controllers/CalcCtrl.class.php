@@ -82,26 +82,52 @@ class CalcCtrl {
 		
 		if ($this->validate()) {
 				
-			//konwersja parametrów na int
-			$this->form->kwota = intval($this->form->kwota);
-			$this->form->lata = intval($this->form->lata);
-                        $this->form->oproc = intval($this->form->oproc);
-			getMessages()->addInfo('Parametry poprawne.');
+                    //konwersja parametrów na int
+                    $this->form->kwota = intval($this->form->kwota);
+                    $this->form->lata = intval($this->form->lata);
+                    $this->form->oproc = intval($this->form->oproc);
+                    getMessages()->addInfo('Parametry poprawne.');
                         
-                        $this->form->msc = $this->form->lata * 12;
-                        $this->form->opr = $this->form->oproc * 0.01;
+                    $this->form->msc = $this->form->lata * 12;
+                    $this->form->opr = $this->form->oproc * 0.01;
 				
 			//wykonanie operacji
-                        if (inRole('admin')) {
-			 $this->result->result = ($this->form->kwota / $this->form->msc + ($this->form->kwota/$this->form->msc)*$this->form->oproc);
-                         getMessages()->addInfo('Wykonano obliczenia.');
-                        }else {
-						getMessages()->addError('Tylko administrator może sobie liczyć');
-			}
+                    if (inRole('admin')) {
+                        $this->result->result = ($this->form->kwota / $this->form->msc + ($this->form->kwota/$this->form->msc)*$this->form->oproc);
+                        getMessages()->addInfo('Wykonano obliczenia.');
+                    }else {
+                        getMessages()->addError('Tylko administrator może sobie liczyć');
+                    }
 			
-		}
+                    try{
+                        $database = new \Medoo\Medoo([
+                        'database_type' => 'mysql',
+                        'database_name' => 'kalk',
+                        'server' => 'localhost',
+                        'username' => 'root',
+                        'password' => '',
+                        'charset' => 'utf8',
+                        'collation' => 'utf8_polish_ci',
+                        'port' => 3306,
+                        'option' => [
+                            \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+                            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+                        ]
+                        ]);
+
+                        $database->insert("wynik", [
+                        "kwota" => $this->form->kwota,
+                        "lata" => $this->form->lata,
+                        "procent" => $this->form->oproc,
+                        "rata" => $this->result->result,
+                        "data" => date("Y-m-d H:i:s")
+                        ]);
+                    }catch(\PDOException $ex){
+                        getMessages()->addError("DB Error: ".$ex->getMessage());
+                    }
+                }    
 		
-		$this->generateView();
+        $this->generateView();
 	}
 	
 	public function action_calcShow(){
