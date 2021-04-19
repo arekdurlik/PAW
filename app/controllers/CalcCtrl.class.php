@@ -27,9 +27,9 @@ class CalcCtrl {
 	 * Pobranie parametrĂłw
 	 */
 	public function getParams(){
-		$this->form->x = getFromRequest('x');
-		$this->form->y = getFromRequest('y');
-		$this->form->op = getFromRequest('op');
+		$this->form->kwota = getFromRequest('kwota');
+		$this->form->lata = getFromRequest('lata');
+		$this->form->oproc = getFromRequest('oproc');
 	}
 	
 	/** 
@@ -37,32 +37,38 @@ class CalcCtrl {
 	 * @return true jeĹ›li brak bĹ‚edĂłw, false w przeciwnym wypadku 
 	 */
 	public function validate() {
-		// sprawdzenie, czy parametry zostaĹ‚y przekazane
-		if (! (isset ( $this->form->x ) && isset ( $this->form->y ) && isset ( $this->form->op ))) {
-			// sytuacja wystÄ…pi kiedy np. kontroler zostanie wywoĹ‚any bezpoĹ›rednio - nie z formularza
+		// sprawdzenie, czy parametry zostały przekazane
+		if (! (isset ( $this->form->kwota ) && isset ( $this->form->lata ) && isset ( $this->form->oproc ))) {
+			// sytuacja wystąpi kiedy np. kontroler zostanie wywołany bezpośrednio - nie z formularza
 			return false;
 		}
 		
-		// sprawdzenie, czy potrzebne wartoĹ›ci zostaĹ‚y przekazane
-		if ($this->form->x == "") {
-			getMessages()->addError('Nie podano liczby 1');
+		// sprawdzenie, czy potrzebne wartości zostały przekazane
+		if ($this->form->kwota == "") {
+			getMessages()->addError('Nie podano kwoty');
 		}
-		if ($this->form->y == "") {
-			getMessages()->addError('Nie podano liczby 2');
+		if ($this->form->lata == "") {
+			getMessages()->addError('Nie podano lat');
+		}
+                if ($this->form->oproc == "") {
+			getMessages()->addError('Nie podano oprocentowania');
 		}
 		
-		// nie ma sensu walidowaÄ‡ dalej gdy brak parametrĂłw
-		if (! getMessages()->isError()) {
+		// nie ma sensu walidować dalej gdy brak parametrów
+		if (!getMessages()->isError()) {
 			
-			// sprawdzenie, czy $x i $y sÄ… liczbami caĹ‚kowitymi
-			if (! is_numeric ( $this->form->x )) {
-				getMessages()->addError('Pierwsza wartoĹ›Ä‡ nie jest liczbÄ… caĹ‚kowitÄ…');
+			// sprawdzenie, czy $x i $y są liczbami całkowitymi
+			if (! is_numeric ( $this->form->kwota )) {
+                            getMessages()->addError('Kwota nie jest liczbą całkowitą');
 			}
 			
-			if (! is_numeric ( $this->form->y )) {
-				getMessages()->addError('Druga wartoĹ›Ä‡ nie jest liczbÄ… caĹ‚kowitÄ…');
+			if (! is_numeric ( $this->form->lata )) {
+				getMessages()->addError('Lata nie są liczbą całkowitą');
 			}
-		}
+		       if (! is_numeric ( $this->form->oproc )) {
+				getMessages()->addError('Oprocentowanie nie jest liczbą całkowitą');
+			}
+                }
 		
 		return ! getMessages()->isError();
 	}
@@ -76,40 +82,23 @@ class CalcCtrl {
 		
 		if ($this->validate()) {
 				
-			//konwersja parametrĂłw na int
-			$this->form->x = intval($this->form->x);
-			$this->form->y = intval($this->form->y);
+			//konwersja parametrów na int
+			$this->form->kwota = intval($this->form->kwota);
+			$this->form->lata = intval($this->form->lata);
+                        $this->form->oproc = intval($this->form->oproc);
 			getMessages()->addInfo('Parametry poprawne.');
+                        
+                        $this->form->msc = $this->form->lata * 12;
+                        $this->form->opr = $this->form->oproc * 0.01;
 				
 			//wykonanie operacji
-			switch ($this->form->op) {
-				case 'minus' :
-					if (inRole('admin')) {
-						$this->result->result = $this->form->x - $this->form->y;
-						$this->result->op_name = '-';
-					} else {
-						getMessages()->addError('Tylko administrator moĹĽe wykonaÄ‡ tÄ™ operacjÄ™');
-					}
-					break;
-				case 'times' :
-					$this->result->result = $this->form->x * $this->form->y;
-					$this->result->op_name = '*';
-					break;
-				case 'div' :
-					if (inRole('admin')) {
-						$this->result->result = $this->form->x / $this->form->y;
-						$this->result->op_name = '/';
-					} else {
-						getMessages()->addError('Tylko administrator moĹĽe wykonaÄ‡ tÄ™ operacjÄ™');
-					}
-					break;
-				default :
-					$this->result->result = $this->form->x + $this->form->y;
-					$this->result->op_name = '+';
-					break;
+                        if (inRole('admin')) {
+			 $this->result->result = ($this->form->kwota / $this->form->msc + ($this->form->kwota/$this->form->msc)*$this->form->oproc);
+                         getMessages()->addInfo('Wykonano obliczenia.');
+                        }else {
+						getMessages()->addError('Tylko administrator może sobie liczyć');
 			}
 			
-			getMessages()->addInfo('Wykonano obliczenia.');
 		}
 		
 		$this->generateView();
@@ -127,11 +116,11 @@ class CalcCtrl {
 
 		getSmarty()->assign('user',unserialize($_SESSION['user']));
 				
-		getSmarty()->assign('page_title','Super kalkulator - role');
+		getSmarty()->assign('page_title','Kalkulator kredytowy');
 
 		getSmarty()->assign('form',$this->form);
 		getSmarty()->assign('res',$this->result);
 		
-		getSmarty()->display('CalcView.tpl');
+		getSmarty()->display('calcView.tpl');
 	}
 }

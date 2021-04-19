@@ -9,85 +9,85 @@ class LoginCtrl{
 	private $form;
 	
 	public function __construct(){
-		//stworzenie potrzebnych obiektĂłw
+		//stworzenie potrzebnych obiektów
 		$this->form = new LoginForm();
 	}
 	
 	public function getParams(){
-		// 1. pobranie parametrĂłw
+		// 1. pobranie parametrów
 		$this->form->login = getFromRequest('login');
 		$this->form->pass = getFromRequest('pass');
 	}
 	
 	public function validate() {
-		// sprawdzenie, czy parametry zostaĹ‚y przekazane
+		// sprawdzenie, czy parametry zostały przekazane
 		if (! (isset ( $this->form->login ) && isset ( $this->form->pass ))) {
-			// sytuacja wystÄ…pi kiedy np. kontroler zostanie wywoĹ‚any bezpoĹ›rednio - nie z formularza
+			// sytuacja wystąpi kiedy np. kontroler zostanie wywołany bezpośrednio - nie z formularza
 			return false;
 		}
 			
-			// nie ma sensu walidowaÄ‡ dalej, gdy brak parametrĂłw
+			// nie ma sensu walidować dalej, gdy brak parametrów
 		if (! getMessages()->isError ()) {
 			
-			// sprawdzenie, czy potrzebne wartoĹ›ci zostaĹ‚y przekazane
+			// sprawdzenie, czy potrzebne wartości zostały przekazane
 			if ($this->form->login == "") {
 				getMessages()->addError ( 'Nie podano loginu' );
 			}
 			if ($this->form->pass == "") {
-				getMessages()->addError ( 'Nie podano hasĹ‚a' );
+				getMessages()->addError ( 'Nie podano hasła' );
 			}
 		}
 
-		//nie ma sensu walidowaÄ‡ dalej, gdy brak wartoĹ›ci
+		//nie ma sensu walidować dalej, gdy brak wartości
 		if ( !getMessages()->isError() ) {
 		
 			// sprawdzenie, czy dane logowania poprawne
-			// (takie informacje najczÄ™Ĺ›ciej przechowuje siÄ™ w bazie danych)
+			// (takie informacje najczęściej przechowuje się w bazie danych)
 			if ($this->form->login == "admin" && $this->form->pass == "admin") {
 
-				//sesja juĹĽ rozpoczÄ™ta w init.php, wiÄ™c dziaĹ‚amy ...
+				//sesja już rozpoczęta w init.php, więc działamy ...
 				$user = new User($this->form->login, 'admin');
-				// zaipsz obiekt uĹĽytkownika w sesji
+				// zaipsz obiekt użytkownika w sesji
 				$_SESSION['user'] = serialize($user);
-				// dodaj rolÄ™ uĹĽytkownikowi (jak wiemy, zapisane teĹĽ w sesji)
+				// dodaj rolę użytkownikowi (jak wiemy, zapisane też w sesji)
 				addRole($user->role);
 
 			} else if ($this->form->login == "user" && $this->form->pass == "user") {
 
-				//sesja juĹĽ rozpoczÄ™ta w init.php, wiÄ™c dziaĹ‚amy ...
+				//sesja już rozpoczęta w init.php, więc działamy ...
 				$user = new User($this->form->login, 'user');
-				// zaipsz obiekt uĹĽytkownika w sesji
+				// zaipsz obiekt użytkownika w sesji
 				$_SESSION['user'] = serialize($user);
-				// dodaj rolÄ™ uĹĽytkownikowi (jak wiemy, zapisane teĹĽ w sesji)
+				// dodaj rolę użytkownikowi (jak wiemy, zapisane też w sesji)
 				addRole($user->role);
 
 			} else {
-				getMessages()->addError('Niepoprawny login lub hasĹ‚o');
+				getMessages()->addError('Niepoprawny login lub hasło');
 			}
 		}
 		
 		return ! getMessages()->isError();
 	}
 	
-	public function doLogin(){
+	public function action_login(){
 
 		$this->getParams();
 		
 		if ($this->validate()){
-			//zalogowany => przekieruj na stronÄ™ gĹ‚ĂłwnÄ…, gdzie uruchomiona zostanie domyĹ›lna akcja
+			//zalogowany => przekieruj na stronę główną, gdzie uruchomiona zostanie domyślna akcja
 			header("Location: ".getConf()->app_url."/");
 		} else {
-			//niezalogowany => wyĹ›wietl stronÄ™ logowania
+			//niezalogowany => wyświetl stronę logowania
 			$this->generateView(); 
 		}
 		
 	}
 	
-	public function doLogout(){
-		// 1. zakoĹ„czenie sesji - tylko koĹ„czymy, jesteĹ›my juĹĽ podĹ‚Ä…czeni w init.php
+	public function action_logout(){
+		// 1. zakończenie sesji - tylko kończymy, jesteśmy już podłączeni w init.php
 		session_destroy();
 		
-		// 2. wyĹ›wietl stronÄ™ logowania z informacjÄ…
+		// 2. wyświetl stronę logowania z informacją
 		getMessages()->addInfo('Poprawnie wylogowano z systemu');
 
 		$this->generateView();		 

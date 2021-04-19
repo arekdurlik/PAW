@@ -1,7 +1,7 @@
 <?php
 
 $conf->server_name = 'localhost:80';
-$conf->app_root = '/php_06a';
+$conf->app_root = '/php_07';
 $conf->server_url = 'http://'.$conf->server_name;
 $conf->action_root = $conf->app_root.'/ctrl.php?action=';
 
